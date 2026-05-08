@@ -35,5 +35,8 @@ python3 -m http.server 8000
 ```
 
 ## Deploy
+### GitHub pages
+Deployas till [GitHub pages](https://oskardrenske.github.io/testdatacreator-web/) vid push till `main`branch
 
-Ladda upp `index.html` till valfri statisk webbserver (t.ex. via SFTP). Det är den enda filen som behövs — all data är inbäddad.
+### Annan webserver
+Ladda upp `docs/index.html` till valfri statisk webbserver (t.ex. via SFTP). Det är den enda filen som behövs — all data är inbäddad.
