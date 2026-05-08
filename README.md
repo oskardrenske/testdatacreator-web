@@ -2,6 +2,9 @@
 
 Webbsida som genererar fiktiva svenska person-poster (personnummer, namn, adress, postadress, telefonnummer) — slumpade från inbäddade källistor. Allt körs i webbläsaren via [PyScript](https://pyscript.net/); inget backend, ingen build.
 
+## Live  
+[GitHub pages](https://oskardrenske.github.io/testdatacreator-web/)
+
 ## Person-post
 
 ```json
