@@ -6,12 +6,28 @@
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.11.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.11.1/core.js"></script>
     <style>
+        :root {
+            --accent: #0c4a6e;
+            --accent-hover: #075985;
+            --accent-soft: #e0f2fe;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --surface: #ffffff;
+            --surface-alt: #f8fafc;
+            --border: #e5e7eb;
+            --radius: 10px;
+            --radius-lg: 14px;
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+            --shadow-focus: 0 0 0 3px rgba(12, 74, 110, 0.18);
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             max-width: 800px;
             margin: 2rem auto;
             padding: 0 1rem;
-            color: #222;
+            color: var(--text);
+            background: var(--surface-alt);
+            line-height: 1.55;
         }
         h1 { margin-bottom: 0.5rem; }
         .controls {
@@ -23,34 +39,161 @@
         }
         label { font-weight: 500; }
         input[type="number"] {
-            padding: 0.4rem 0.6rem;
+            padding: 0.5rem 0.75rem;
             font-size: 1rem;
             width: 6rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: var(--shadow-sm);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: var(--shadow-focus);
         }
         button {
-            padding: 0.5rem 1rem;
+            padding: 0.55rem 1.1rem;
             font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            border: 1px solid #888;
-            background: #f6f6f6;
-            border-radius: 4px;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: var(--shadow-sm);
+            transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
         }
-        button:hover:not(:disabled) { background: #e8e8e8; }
+        button:focus-visible {
+            outline: none;
+            box-shadow: var(--shadow-focus);
+        }
+        button:active:not(:disabled) { transform: translateY(1px); }
+        button#generate-btn {
+            background: var(--accent);
+            color: #fff;
+        }
+        button#generate-btn:hover:not(:disabled) { background: var(--accent-hover); }
+        button#download-btn {
+            border-color: var(--border);
+        }
+        button#download-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-        #status { margin: 0.5rem 0; color: #666; font-size: 0.9rem; }
+        #status { margin: 0.5rem 0; color: var(--text-muted); font-size: 0.9rem; }
+        .view-toggle {
+            display: inline-flex;
+            gap: 2px;
+            padding: 3px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            margin: 0 0 0.75rem;
+        }
+        .view-toggle button {
+            padding: 0.3rem 0.85rem;
+            font-size: 0.9rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            box-shadow: none;
+            border-radius: 7px;
+        }
+        .view-toggle button:hover:not(.active) { background: var(--surface-alt); color: var(--text); }
+        .view-toggle button.active {
+            background: var(--accent);
+            color: #fff;
+        }
         #preview {
-            background: #f4f4f4;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 1rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        #preview[data-view="json"] {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.25rem;
             font-family: ui-monospace, "SF Mono", Menlo, monospace;
             font-size: 0.85rem;
             white-space: pre;
             overflow-x: auto;
-            max-height: 500px;
-            overflow-y: auto;
+            box-shadow: var(--shadow-sm);
         }
-        .loader { color: #888; font-style: italic; }
+        #preview[data-view="cards"] {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 0.75rem;
+            padding: 2px;
+        }
+        .person-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.9rem 1rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            transition: border-color 0.15s ease, transform 0.15s ease;
+        }
+        .person-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+        .person-card__header {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+        .person-card__avatar {
+            width: 2.4rem;
+            height: 2.4rem;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--accent-soft);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .person-card__name { font-weight: 600; line-height: 1.2; }
+        .person-card__pnr {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace;
+            margin-top: 0.15rem;
+        }
+        .person-card__row {
+            font-size: 0.9rem;
+            color: var(--text);
+            display: flex;
+            gap: 0.4rem;
+        }
+        .person-card__row span:first-child {
+            color: var(--text-muted);
+            min-width: 4.5rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            align-self: center;
+        }
+        .preview-more {
+            grid-column: 1 / -1;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        .loader { color: var(--text-muted); font-style: italic; }
     </style>
 </head>
 <body>
@@ -65,6 +208,11 @@
     </div>
 
     <div id="status" class="loader">Laddar PyScript…</div>
+
+    <div class="view-toggle" role="group" aria-label="Visa som" hidden id="view-toggle">
+        <button type="button" id="view-cards-btn" class="active">Kort</button>
+        <button type="button" id="view-json-btn">JSON</button>
+    </div>
     <div id="preview"></div>
 
     <script type="application/json" id="data-address_prefix">["Alm", "Asp", "Back", "Bergs", "Björk", "Brunns", "Bäck", "Celsius", "Dal", "Drottning", "Ek", "Fabriks", "Fors", "Frej", "Furu", "Gjuteri", "Gran", "Hamn", "Höjd", "Idrotts", "Industri", "Järnvägs", "Karls", "Konstnär", "Kungs", "Kvarn", "Kyrko", "Lill", "Löv", "Nobel", "Norr", "Ny", "Oden", "Park", "Präst", "Ring", "Scheele", "Sjö", "Skogs", "Skol", "Sluss", "Smides", "Spinneri", "Stations", "Stor", "Strand", "Sture", "Svetsar", "Söder", "Tall", "Tors", "Trädgårds", "Villa", "Väster", "Ängs", "Å", "Åker", "Ås", "Öster"]</script>
@@ -111,6 +259,71 @@ def make_person():
     }
 
 
+current_view = "cards"
+PREVIEW_LIMIT = 20
+
+
+def escape_html(value):
+    return (
+        str(value)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+
+def render_cards(people, total):
+    parts = []
+    for p in people:
+        initials = (p["first_name"][:1] + p["last_name"][:1]).upper()
+        parts.append(
+            '<div class="person-card">'
+            '<div class="person-card__header">'
+            f'<div class="person-card__avatar">{escape_html(initials)}</div>'
+            '<div>'
+            f'<div class="person-card__name">{escape_html(p["first_name"])} {escape_html(p["last_name"])}</div>'
+            f'<div class="person-card__pnr">{escape_html(p["personnummer"])}</div>'
+            '</div>'
+            '</div>'
+            f'<div class="person-card__row"><span>Adress</span><span>{escape_html(p["adress"])} {escape_html(p["gatunummer"])}</span></div>'
+            f'<div class="person-card__row"><span>Postort</span><span>{escape_html(p["postadress"])}</span></div>'
+            f'<div class="person-card__row"><span>Telefon</span><span>{escape_html(p["telefonnummer"])}</span></div>'
+            '</div>'
+        )
+    if total > len(people):
+        parts.append(f'<div class="preview-more">… och {total - len(people)} till.</div>')
+    return "".join(parts)
+
+
+def render_preview():
+    preview_el = document.getElementById("preview")
+    preview_el.setAttribute("data-view", current_view)
+    if not last_result:
+        preview_el.innerHTML = ""
+        return
+    shown = last_result[:PREVIEW_LIMIT]
+    if current_view == "json":
+        text = json.dumps(shown, ensure_ascii=False, indent=2)
+        if len(last_result) > PREVIEW_LIMIT:
+            text += f"\n\n… och {len(last_result) - PREVIEW_LIMIT} till."
+        preview_el.textContent = text
+    else:
+        preview_el.innerHTML = render_cards(shown, len(last_result))
+
+
+def set_view(view):
+    global current_view
+    current_view = view
+    for v in ("cards", "json"):
+        btn = document.getElementById(f"view-{v}-btn")
+        if v == view:
+            btn.classList.add("active")
+        else:
+            btn.classList.remove("active")
+    render_preview()
+
+
 def generate(event=None):
     global last_result
     count_input = document.getElementById("count")
@@ -122,10 +335,8 @@ def generate(event=None):
         document.getElementById("status").innerText = "Ange ett antal mellan 1 och 1000."
         return
     last_result = [make_person() for _ in range(n)]
-    preview = json.dumps(last_result[:20], ensure_ascii=False, indent=2)
-    if n > 20:
-        preview += f"\n\n… och {n - 20} till."
-    document.getElementById("preview").innerText = preview
+    document.getElementById("view-toggle").hidden = False
+    render_preview()
     document.getElementById("status").innerText = f"Genererade {n} personer."
     document.getElementById("download-btn").disabled = False
 
@@ -148,6 +359,8 @@ def download(event=None):
 document.getElementById("generate-btn").disabled = False
 document.getElementById("generate-btn").onclick = generate
 document.getElementById("download-btn").onclick = download
+document.getElementById("view-cards-btn").onclick = lambda e=None: set_view("cards")
+document.getElementById("view-json-btn").onclick = lambda e=None: set_view("json")
 document.getElementById("status").innerText = "Klart. Välj antal och klicka Generera."
     </script>
 </body>
